@@ -6,7 +6,7 @@
 
 // Library headers
 //
-#include <ros/ros.h>
+#include "rclcpp/rclcpp.hpp"
 #include <nodelet/nodelet.h>
 
 // Project headers

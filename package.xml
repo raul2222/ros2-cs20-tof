@@ -10,9 +10,7 @@
   <author email="xxx@xxx.com">SYN</author>
   <license>MIT</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
-
-  <depend>roscpp</depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>image_transport</depend>
@@ -26,9 +24,11 @@
   <depend>nodelet</depend>
   <depend>xacro</depend>
   <depend>cv_bridge</depend>
+  <depend>rclcpp</depend>
 
   <export>
-    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
+    <nodelet plugin="${prefix}/nodelet_plugins.xml"/>
+    <build_type>ament_cmake</build_type>
   </export>
 
 </package>

@@ -8,12 +8,12 @@
 // Library headers
 //
 #include <libsynexens3/libsynexens3.h>
-#include <ros/ros.h>
+#include "rclcpp/rclcpp.hpp"
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Vector3.h>
-#include <sensor_msgs/CameraInfo.h>
+#include <sensor_msgs/msg/camera_info.hpp>
 
 // Project headers
 //
@@ -32,8 +32,8 @@ public:
   int getDepthHeight();
   int getColorWidth();
   int getColorHeight();
-  void getDepthCameraInfo(sensor_msgs::CameraInfo& camera_info, sy3_intrinsics* intrinsics = nullptr);
-  void getRgbCameraInfo(sensor_msgs::CameraInfo& camera_info, sy3_intrinsics* intrinsics = nullptr);
+  void getDepthCameraInfo(sensor_msgs::msg::CameraInfo& camera_info, sy3_intrinsics* intrinsics = nullptr);
+  void getRgbCameraInfo(sensor_msgs::msg::CameraInfo& camera_info, sy3_intrinsics* intrinsics = nullptr);
   void print();
 
   sy3_intrinsics rgb_camera_intrinsics_;

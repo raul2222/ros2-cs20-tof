@@ -7,7 +7,7 @@
 // Library headers
 //
 #include <libsynexens3/libsynexens3.h>
-#include <ros/ros.h>
+#include "rclcpp/rclcpp.hpp"
 
 // Project headers
 //

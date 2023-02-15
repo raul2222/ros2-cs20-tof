@@ -60,7 +60,7 @@ SynexensROSDevice::SynexensROSDevice(const NodeHandle& n, const NodeHandle& p)
 #undef LIST_ENTRY
 
   // Print all parameters
-  ROS_INFO("SY3 Parameters:");
+  RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "SY3 Parameters:");
   params_.Print();
 
   // Setup the SY3 device
@@ -142,9 +142,9 @@ SynexensROSDevice::~SynexensROSDevice()
   running_ = false;
 
   // Join the publisher thread
-  ROS_INFO("Joining camera publisher thread");
+  RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "Joining camera publisher thread");
   frame_publisher_thread_.join();
-  ROS_INFO("Camera publisher thread joined");
+  RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "Camera publisher thread joined");
 
   stopCameras();
 
@@ -170,7 +170,7 @@ sy3_error SynexensROSDevice::setOptions()
     ROS_ERROR_STREAM("Failed to get a SY3 sensor. Error: " << sy3::sy3_error_to_string(e));
     return e;
   }
-  ROS_INFO("Set Sensor Options");
+  RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "Set Sensor Options");
   if(params_.exposure_range_min > 0 && params_.exposure_range_max > 0 && params_.exposure_range_min < params_.exposure_range_max)
   {
     sensor->set_option(sy3::sy3_option::SY3_OPTION_EXPOSURE, (uint16_t)params_.exposure_range_max, (uint16_t)params_.exposure_range_min, e);
@@ -224,7 +224,7 @@ sy3_error SynexensROSDevice::startCameras()
     sy3_error result = params_.GetDeviceConfig(&sy3_configuration);
     if (result != sy3_error::SUCCESS)
     {
-      ROS_ERROR("Failed to generate a device configuration. Not starting camera!");
+      RCLCPP_ERROR(rclcpp::get_logger("SynexensRosDriver"), "Failed to generate a device configuration. Not starting camera!");
       return result;
     }
 
@@ -280,52 +280,52 @@ void SynexensROSDevice::stopCameras()
   if (sy3_device_)
   {
     // Stop the K4A SDK
-    ROS_INFO("Stopping SY3 device");
+    RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "Stopping SY3 device");
     sy3_pline_->stop(e);
-    ROS_INFO("SY3 device stopped");
+    RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "SY3 device stopped");
   }
   delete sy3_pline_;
   sy3_pline_ = nullptr;
 }
 
-sy3_error SynexensROSDevice::getDepthFrame(sy3::frameset* capture, sensor_msgs::ImagePtr& depth_frame)
+sy3_error SynexensROSDevice::getDepthFrame(sy3::frameset* capture, sensor_msgs::msg::ImagePtr& depth_frame)
 {
   sy3::depth_frame *sy3_depth_frame = capture->get_depth_frame();
 
   if (!sy3_depth_frame || !sy3_depth_frame->get_data())
   {
-    ROS_INFO("Cannot render depth frame: no frame");
+    RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "Cannot render depth frame: no frame");
     return sy3_error::INCONSISTENCY_RES;
   }
 
   return renderDepthToROS(depth_frame, sy3_depth_frame);
 }
 
-sy3_error SynexensROSDevice::renderDepthToROS(sensor_msgs::ImagePtr& depth_image, sy3::frame* sy3_depth_frame)
+sy3_error SynexensROSDevice::renderDepthToROS(sensor_msgs::msg::ImagePtr& depth_image, sy3::frame* sy3_depth_frame)
 {
   cv::Mat depth_frame_buffer_mat(sy3_depth_frame->get_height(), sy3_depth_frame->get_width(), CV_16UC1, sy3_depth_frame->get_data());
 
-  depth_image = cv_bridge::CvImage(std_msgs::Header(), 
+  depth_image = cv_bridge::CvImage(std_msgs::msg::Header(), 
                                    sensor_msgs::image_encodings::TYPE_16UC1, 
                                    depth_frame_buffer_mat).toImageMsg();
 
   return sy3_error::SUCCESS;
 }
 
-sy3_error SynexensROSDevice::getIrFrame(sy3::frameset* capture, sensor_msgs::ImagePtr& ir_frame)
+sy3_error SynexensROSDevice::getIrFrame(sy3::frameset* capture, sensor_msgs::msg::ImagePtr& ir_frame)
 {
   sy3::ir_frame *sy3_ir_frame = capture->get_ir_frame();
 
   if (!sy3_ir_frame || !sy3_ir_frame->get_data())
   {
-    ROS_INFO("Cannot render ir frame: no frame");
+    RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "Cannot render ir frame: no frame");
     return sy3_error::INCONSISTENCY_RES;
   }
 
   return renderIrToROS(ir_frame, sy3_ir_frame);
 }
 
-sy3_error SynexensROSDevice::renderIrToROS(sensor_msgs::ImagePtr& ir_image, sy3::frame* sy3_ir_frame)
+sy3_error SynexensROSDevice::renderIrToROS(sensor_msgs::msg::ImagePtr& ir_image, sy3::frame* sy3_ir_frame)
 {
   cv::Mat ir_buffer_mat(sy3_ir_frame->get_height(), sy3_ir_frame->get_width(), CV_16UC1, sy3_ir_frame->get_data());
 
@@ -336,43 +336,43 @@ sy3_error SynexensROSDevice::renderIrToROS(sensor_msgs::ImagePtr& ir_image, sy3:
     cv::Mat new_image(sy3_ir_frame->get_height(), sy3_ir_frame->get_width(), CV_8UC1);
     cv::normalize(ir_buffer_mat, tmp, 0, 255, cv::NORM_MINMAX);
 		cv::convertScaleAbs(tmp, new_image);
-    ir_image = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::MONO8, new_image).toImageMsg();
+    ir_image = cv_bridge::CvImage(std_msgs::msg::Header(), sensor_msgs::image_encodings::MONO8, new_image).toImageMsg();
   }
   else
   {
-    ir_image = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::MONO16, ir_buffer_mat).toImageMsg();
+    ir_image = cv_bridge::CvImage(std_msgs::msg::Header(), sensor_msgs::image_encodings::MONO16, ir_buffer_mat).toImageMsg();
   }
 
   return sy3_error::SUCCESS;
 }
 
-sy3_error SynexensROSDevice::getYuvRbgFrame(sy3::frameset* capture, sensor_msgs::ImagePtr& rgb_image)
+sy3_error SynexensROSDevice::getYuvRbgFrame(sy3::frameset* capture, sensor_msgs::msg::ImagePtr& rgb_image)
 {
   sy3::rgb_frame* sy3_rgb_frame = capture->get_rgb_frame();
 
   if (!sy3_rgb_frame || !sy3_rgb_frame->get_data())
   {
-    ROS_INFO("Cannot render rgb frame: no frame");
+    RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "Cannot render rgb frame: no frame");
     return sy3_error::INCONSISTENCY_RES;
   }
 
   return renderYuvRgbToROS(rgb_image, sy3_rgb_frame);
 }
 
-sy3_error SynexensROSDevice::getRbgFrame(sy3::frameset* capture, sensor_msgs::ImagePtr& rgb_image)
+sy3_error SynexensROSDevice::getRbgFrame(sy3::frameset* capture, sensor_msgs::msg::ImagePtr& rgb_image)
 {
   sy3::rgb_frame* sy3_rgb_frame = capture->get_rgb_frame();
 
   if (!sy3_rgb_frame || !sy3_rgb_frame->get_data())
   {
-    ROS_INFO("Cannot render rgb frame: no frame");
+    RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "Cannot render rgb frame: no frame");
     return sy3_error::INCONSISTENCY_RES;
   }
 
   return renderRgbToROS(rgb_image, sy3_rgb_frame);
 }
 
-sy3_error SynexensROSDevice::renderYuvRgbToROS(sensor_msgs::ImagePtr& rgb_image, sy3::frame* sy3_rgb_frame)
+sy3_error SynexensROSDevice::renderYuvRgbToROS(sensor_msgs::msg::ImagePtr& rgb_image, sy3::frame* sy3_rgb_frame)
 {
   uint16_t* rgb_data = (uint16_t*)sy3_rgb_frame->get_data();
   int rgb_width = sy3_rgb_frame->get_width();
@@ -381,43 +381,43 @@ sy3_error SynexensROSDevice::renderYuvRgbToROS(sensor_msgs::ImagePtr& rgb_image,
   cv::Mat rgb_buffer_mat = cv::Mat(rgb_height, rgb_width, CV_8UC3);
   cv::cvtColor(yuvImg, rgb_buffer_mat, cv::ColorConversionCodes::COLOR_YUV2BGR_NV12);
 
-  rgb_image = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, rgb_buffer_mat).toImageMsg();
+  rgb_image = cv_bridge::CvImage(std_msgs::msg::Header(), sensor_msgs::image_encodings::BGR8, rgb_buffer_mat).toImageMsg();
   
   return sy3_error::SUCCESS;
 }
 
-sy3_error SynexensROSDevice::renderRgbToROS(sensor_msgs::ImagePtr& rgb_image, sy3::frame* sy3_rgb_frame)
+sy3_error SynexensROSDevice::renderRgbToROS(sensor_msgs::msg::ImagePtr& rgb_image, sy3::frame* sy3_rgb_frame)
 {
   cv::Mat rgb_buffer_mat(sy3_rgb_frame->get_height(), sy3_rgb_frame->get_width(), CV_8UC3, sy3_rgb_frame->get_data());
 
-  rgb_image = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, rgb_buffer_mat).toImageMsg();
+  rgb_image = cv_bridge::CvImage(std_msgs::msg::Header(), sensor_msgs::image_encodings::BGR8, rgb_buffer_mat).toImageMsg();
 
   return sy3_error::SUCCESS;
 }
 
-sy3_error SynexensROSDevice::getPointCloud(sy3::frameset* capture, sensor_msgs::PointCloud2Ptr& point_cloud)
+sy3_error SynexensROSDevice::getPointCloud(sy3::frameset* capture, sensor_msgs::msg::PointCloud2Ptr& point_cloud)
 {
   sy3::depth_frame *sy3_depth_frame = capture->get_depth_frame();
 
   if (!sy3_depth_frame || !sy3_depth_frame->get_data())
   {
-    ROS_INFO("Cannot render depth frame: no frame");
+    RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "Cannot render depth frame: no frame");
     return sy3_error::INCONSISTENCY_RES;
   }
 
   point_cloud->header.frame_id = calibration_data_.tf_prefix_ + calibration_data_.depth_camera_frame_;
-  point_cloud->header.stamp = ros::Time::now();
+  point_cloud->header.stamp = rclcpp::Time::now();
 
   // Tranform depth image to point cloud
   return fillPointCloud(sy3_depth_frame, point_cloud);
 }
 
-sy3_error SynexensROSDevice::fillPointCloud(sy3::depth_frame* depth_image, sensor_msgs::PointCloud2Ptr& point_cloud)
+sy3_error SynexensROSDevice::fillPointCloud(sy3::depth_frame* depth_image, sensor_msgs::msg::PointCloud2Ptr& point_cloud)
 {
   sy3::sy3_error e;
   if(!sy3_engine_)
   {
-    ROS_INFO("Cannot get process engin");
+    RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "Cannot get process engin");
     return sy3_error::INCONSISTENCY_RES;
   }
 	sy3::points* points = sy3_engine_->comptute_points(depth_image, e);
@@ -427,7 +427,7 @@ sy3_error SynexensROSDevice::fillPointCloud(sy3::depth_frame* depth_image, senso
   //check points number
   if(point_count != length)
   {
-    ROS_INFO("Point Cloud Error: invalid points number");
+    RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "Point Cloud Error: invalid points number");
     return sy3_error::INCONSISTENCY_RES;
   }
   
@@ -436,12 +436,12 @@ sy3_error SynexensROSDevice::fillPointCloud(sy3::depth_frame* depth_image, senso
   point_cloud->is_dense = false;
   point_cloud->is_bigendian = false;
   
-  sensor_msgs::PointCloud2Modifier pcd_modifier(*point_cloud);
+  sensor_msgs::msg::PointCloud2Modifier pcd_modifier(*point_cloud);
   pcd_modifier.setPointCloud2FieldsByString(1, "xyz");
 
-  sensor_msgs::PointCloud2Iterator<float> iter_x(*point_cloud, "x");
-  sensor_msgs::PointCloud2Iterator<float> iter_y(*point_cloud, "y");
-  sensor_msgs::PointCloud2Iterator<float> iter_z(*point_cloud, "z");
+  sensor_msgs::msg::PointCloud2Iterator<float> iter_x(*point_cloud, "x");
+  sensor_msgs::msg::PointCloud2Iterator<float> iter_y(*point_cloud, "y");
+  sensor_msgs::msg::PointCloud2Iterator<float> iter_z(*point_cloud, "z");
 
   pcd_modifier.resize(point_count);
 
@@ -483,11 +483,11 @@ sy3_error SynexensROSDevice::configStreams(const sy3_config_mode_t& configuratio
   std::vector<sy3::sy3_stream> support_stream = sy3_device_->get_support_stream(e);
 	for (int i = 0; i < support_stream.size(); i++)
 	{
-		ROS_INFO("support stream:%s ", sy3_stream_to_string(support_stream[i]));
+		RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "support stream:%s ", sy3_stream_to_string(support_stream[i]));
 		std::vector<sy3::sy3_format> support_format = sy3_device_->get_support_format(support_stream[i], e);
 		for (int j = 0; j < support_format.size(); j++)
 		{
-			ROS_INFO("\t\t support format:%d x %d \n", support_format[j].width, support_format[j].height);
+			RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "\t\t support format:%d x %d \n", support_format[j].width, support_format[j].height);
 		}
 	}
 
@@ -515,7 +515,7 @@ sy3_error SynexensROSDevice::configStreams(const sy3_config_mode_t& configuratio
 
   if(e != SUCCESS)
   {
-    ROS_ERROR("Enable depth failed: %d, %d, %s", depth_width,depth_height, sy3_error_to_string(e));
+    RCLCPP_ERROR(rclcpp::get_logger("SynexensRosDriver"), "Enable depth failed: %d, %d, %s", depth_width,depth_height, sy3_error_to_string(e));
     return e;
   }
     
@@ -525,7 +525,7 @@ sy3_error SynexensROSDevice::configStreams(const sy3_config_mode_t& configuratio
 
   if(e != SUCCESS)
   {
-    ROS_ERROR("Enable ir failed: %d, %d, %s", depth_width, depth_height, sy3_error_to_string(e));
+    RCLCPP_ERROR(rclcpp::get_logger("SynexensRosDriver"), "Enable ir failed: %d, %d, %s", depth_width, depth_height, sy3_error_to_string(e));
     return e;
   }
 
@@ -550,7 +550,7 @@ sy3_error SynexensROSDevice::configStreams(const sy3_config_mode_t& configuratio
     sy3_cfg_->enable_stream(sy3::sy3_stream::SY3_STREAM_RGB, rgb_width, rgb_height, e);
     if(e != SUCCESS)
     {
-      ROS_ERROR("Enable rgb failed: %d, %d, %s", rgb_width, rgb_height, sy3_error_to_string(e));
+      RCLCPP_ERROR(rclcpp::get_logger("SynexensRosDriver"), "Enable rgb failed: %d, %d, %s", rgb_width, rgb_height, sy3_error_to_string(e));
       return e;
     }
   }
@@ -560,7 +560,7 @@ sy3_error SynexensROSDevice::configStreams(const sy3_config_mode_t& configuratio
 
 void SynexensROSDevice::framePublisherThread()
 {
-  ros::Rate loop_rate(params_.fps);
+  rclcpp::Rate loop_rate(params_.fps);
   sy3_error result;
 
   CameraInfo rgb_raw_camera_info;
@@ -576,7 +576,7 @@ void SynexensROSDevice::framePublisherThread()
   const unsigned int regularFrameWaitTime = 1000 * 5 / params_.fps;
   unsigned int waitTime = firstFrameWaitTime;
 
-  while (running_ && ros::ok() && !ros::isShuttingDown())
+  while (running_ && rclcpp::ok() && !ros::isShuttingDown())
   {
     if (sy3_pline_)
     {
@@ -586,7 +586,7 @@ void SynexensROSDevice::framePublisherThread()
         //ROS_FATAL("Failed to poll cameras: node cannot continue.");
         //ros::requestShutdown();
         //return;
-        ROS_INFO("Timeout to get frame");
+        RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "Timeout to get frame");
         continue;
       }
       waitTime = regularFrameWaitTime;
@@ -612,7 +612,7 @@ void SynexensROSDevice::framePublisherThread()
 
         if (result != sy3_error::SUCCESS)
         {
-          ROS_ERROR("Failed to get raw IR frame");
+          RCLCPP_ERROR(rclcpp::get_logger("SynexensRosDriver"), "Failed to get raw IR frame");
           ros::shutdown();
           return;
         }
@@ -754,7 +754,7 @@ void SynexensROSDevice::framePublisherThread()
                                        << "Actual loop time: " << loop_rate.cycleTime() << std::endl);
     }
 
-    ros::spinOnce();
+    rclcpp::spin_some(node);
     loop_rate.sleep();
   }
 }

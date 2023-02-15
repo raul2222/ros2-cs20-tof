@@ -76,7 +76,7 @@ sy3_error SynexensROSDeviceParams::GetDeviceConfig(sy3_config_mode_t* configurat
 void SynexensROSDeviceParams::Help()
 {
 #define LIST_ENTRY(param_variable, param_help_string, param_type, param_default_val)                                   \
-  ROS_INFO("#param_variable - #param_type : param_help_string (#param_default_val)");
+  RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "#param_variable - #param_type : param_help_string (#param_default_val)");
 
   ROS_PARAM_LIST
 #undef LIST_ENTRY

@@ -4,7 +4,7 @@
 
 // Library headers
 //
-#include <ros/ros.h>
+#include "rclcpp/rclcpp.hpp"
 #include <libsynexens3/libsynexens3.h>
 
 // Project headers
@@ -14,7 +14,8 @@ using namespace sy3;
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "synexens_bridge");
+  rclcpp::init(argc, argv);
+  auto node = rclcpp::Node::make_shared("synexens_bridge");
 
   // Setup the synexens device
   std::shared_ptr<SynexensROSDevice> device(new SynexensROSDevice);
@@ -27,22 +28,22 @@ int main(int argc, char** argv)
     return -1;
   }
   
-  ROS_INFO("SY3 Started");
+  RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "SY3 Started");
 
   if (result == sy3_error::SUCCESS)
   {
-    ros::spin();
+    rclcpp::spin(node);
 
-    ROS_INFO("ROS Exit Started");
+    RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "ROS Exit Started");
   }
 
   device.reset();
 
-  ROS_INFO("ROS Exit");
+  RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "ROS Exit");
 
   ros::shutdown();
 
-  ROS_INFO("ROS Shutdown complete");
+  RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "ROS Shutdown complete");
 
   return 0;
 }

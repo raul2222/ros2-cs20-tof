@@ -56,21 +56,21 @@ int SynexensCalibrationTransformData::getColorHeight()
 
 void SynexensCalibrationTransformData::print()
 {
-  ROS_INFO("SY3 Camera Intrinsics:");
-  ROS_INFO("\t Depth:");
+  RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "SY3 Camera Intrinsics:");
+  RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "\t Depth:");
   printCameraCalibration(depth_camera_intrinsics_);
 
-  ROS_INFO("\t Color:");
+  RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "\t Color:");
   printCameraCalibration(rgb_camera_intrinsics_);
 }
 
 void SynexensCalibrationTransformData::printCameraCalibration(sy3_intrinsics& calibration)
 {
-  ROS_INFO("\t\t Resolution:");
+  RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "\t\t Resolution:");
   ROS_INFO_STREAM("\t\t\t Width: " << calibration.width);
   ROS_INFO_STREAM("\t\t\t Height: " << calibration.height);
 
-  ROS_INFO("\t\t Intrinsics:");
+  RCLCPP_INFO(rclcpp::get_logger("SynexensRosDriver"), "\t\t Intrinsics:");
   ROS_INFO_STREAM("\t\t\t cx: " << calibration.ppx);
   ROS_INFO_STREAM("\t\t\t cy: " << calibration.ppy);
   ROS_INFO_STREAM("\t\t\t fx: " << calibration.fx);
@@ -82,7 +82,7 @@ void SynexensCalibrationTransformData::printCameraCalibration(sy3_intrinsics& ca
   ROS_INFO_STREAM("\t\t\t k5: " << calibration.coeffs[4]);
 }
 
-static void SetCameraInfo(const sy3_intrinsics& parameters, sensor_msgs::CameraInfo& camera_info)
+static void SetCameraInfo(const sy3_intrinsics& parameters, sensor_msgs::msg::CameraInfo& camera_info)
 {
   // The distortion parameters, size depending on the distortion model.
   // For "plumb_bob", the 5 parameters are: (k1, k2, k3, k4, k5).
@@ -127,7 +127,7 @@ static void SetCameraInfo(const sy3_intrinsics& parameters, sensor_msgs::CameraI
   // clang-format on
 }
 
-void SynexensCalibrationTransformData::getDepthCameraInfo(sensor_msgs::CameraInfo& camera_info, sy3_intrinsics* intrinsics)
+void SynexensCalibrationTransformData::getDepthCameraInfo(sensor_msgs::msg::CameraInfo& camera_info, sy3_intrinsics* intrinsics)
 {
   camera_info.header.frame_id = tf_prefix_ + depth_camera_frame_;
   camera_info.width = intrinsics? intrinsics->width : getColorWidth();
@@ -136,7 +136,7 @@ void SynexensCalibrationTransformData::getDepthCameraInfo(sensor_msgs::CameraInf
   SetCameraInfo(intrinsics? *intrinsics : depth_camera_intrinsics_, camera_info);
 }
 
-void SynexensCalibrationTransformData::getRgbCameraInfo(sensor_msgs::CameraInfo& camera_info, sy3_intrinsics* intrinsics)
+void SynexensCalibrationTransformData::getRgbCameraInfo(sensor_msgs::msg::CameraInfo& camera_info, sy3_intrinsics* intrinsics)
 {
   camera_info.header.frame_id = tf_prefix_ + rgb_camera_frame_;
   camera_info.width = intrinsics? intrinsics->width : getColorWidth();
@@ -176,9 +176,9 @@ tf2::Quaternion SynexensCalibrationTransformData::getDepthToBaseRotationCorrecti
 void SynexensCalibrationTransformData::publishDepthToBaseTf()
 {
   // This is a purely cosmetic transform to make the base model of the URDF look good.
-  geometry_msgs::TransformStamped static_transform;
+  geometry_msgs::msg::TransformStamped static_transform;
 
-  static_transform.header.stamp = ros::Time::now();
+  static_transform.header.stamp = rclcpp::Time::now();
   static_transform.header.frame_id = tf_prefix_ + camera_base_frame_;
   static_transform.child_frame_id = tf_prefix_ + depth_camera_frame_;
 

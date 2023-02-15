@@ -11,13 +11,13 @@
 //
 #include <image_transport/image_transport.h>
 #include <libsynexens3/libsynexens3.h>
-#include <ros/ros.h>
-#include <sensor_msgs/CameraInfo.h>
-#include <sensor_msgs/CompressedImage.h>
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/Imu.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <sensor_msgs/Temperature.h>
+#include "rclcpp/rclcpp.hpp"
+#include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/compressed_image.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <sensor_msgs/msg/temperature.hpp>
 #include <camera_info_manager/camera_info_manager.h>
 
 // Project headers
@@ -30,25 +30,25 @@ using namespace sy3;
 class SynexensROSDevice
 {
  public:
-  SynexensROSDevice(const ros::NodeHandle& n = ros::NodeHandle(), const ros::NodeHandle& p = ros::NodeHandle("~"));
+  SynexensROSDevice(const rclcpp::Node& n = rclcpp::Node(), const rclcpp::Node& p = rclcpp::Node("~"));
 
   ~SynexensROSDevice();
 
   sy3_error startCameras();
   void stopCameras();
 
-  sy3_error getDepthFrame(sy3::frameset* capture, sensor_msgs::ImagePtr& depth_frame);
-  sy3_error getYuvRbgFrame(sy3::frameset* capture, sensor_msgs::ImagePtr& rgb_frame);
-  sy3_error getRbgFrame(sy3::frameset* capture, sensor_msgs::ImagePtr& rgb_frame);
-  sy3_error getIrFrame(sy3::frameset* capture, sensor_msgs::ImagePtr& ir_image);
-  sy3_error getPointCloud(sy3::frameset* capture, sensor_msgs::PointCloud2Ptr& point_cloud);
+  sy3_error getDepthFrame(sy3::frameset* capture, sensor_msgs::msg::ImagePtr& depth_frame);
+  sy3_error getYuvRbgFrame(sy3::frameset* capture, sensor_msgs::msg::ImagePtr& rgb_frame);
+  sy3_error getRbgFrame(sy3::frameset* capture, sensor_msgs::msg::ImagePtr& rgb_frame);
+  sy3_error getIrFrame(sy3::frameset* capture, sensor_msgs::msg::ImagePtr& ir_image);
+  sy3_error getPointCloud(sy3::frameset* capture, sensor_msgs::msg::PointCloud2Ptr& point_cloud);
 
  private:
-  sy3_error renderYuvRgbToROS(sensor_msgs::ImagePtr& rgb_frame, sy3::frame* sy3_rgb_frame);
-  sy3_error renderRgbToROS(sensor_msgs::ImagePtr& rgb_frame, sy3::frame* sy3_rgb_frame);
-  sy3_error renderDepthToROS(sensor_msgs::ImagePtr& depth_image, sy3::frame* sy3_depth_frame);
-  sy3_error renderIrToROS(sensor_msgs::ImagePtr& ir_image, sy3::frame* sy3_ir_frame);
-  sy3_error fillPointCloud(sy3::depth_frame* depth_image, sensor_msgs::PointCloud2Ptr& point_cloud);
+  sy3_error renderYuvRgbToROS(sensor_msgs::msg::ImagePtr& rgb_frame, sy3::frame* sy3_rgb_frame);
+  sy3_error renderRgbToROS(sensor_msgs::msg::ImagePtr& rgb_frame, sy3::frame* sy3_rgb_frame);
+  sy3_error renderDepthToROS(sensor_msgs::msg::ImagePtr& depth_image, sy3::frame* sy3_depth_frame);
+  sy3_error renderIrToROS(sensor_msgs::msg::ImagePtr& ir_image, sy3::frame* sy3_ir_frame);
+  sy3_error fillPointCloud(sy3::depth_frame* depth_image, sensor_msgs::msg::PointCloud2Ptr& point_cloud);
 
   sy3_error setOptions();
   sy3_error configStreams(const sy3_config_mode_t& configuration);
@@ -59,11 +59,11 @@ class SynexensROSDevice
   // Gets a timestap from one of the captures images
   std::chrono::microseconds getCaptureTimestamp(const sy3::frameset& capture);
 
-  // Converts a timestamp to a ros::Time object
-  ros::Time timestampToROS(const std::chrono::microseconds& timestamp_us);
+  // Converts a timestamp to a rclcpp::Time object
+  rclcpp::Time timestampToROS(const std::chrono::microseconds& timestamp_us);
 
-  // Converts a timestamp to a ros::Time object
-  ros::Time timestampToROS(const uint64_t& timestamp_us);
+  // Converts a timestamp to a rclcpp::Time object
+  rclcpp::Time timestampToROS(const uint64_t& timestamp_us);
 
   // Updates the timestamp offset (stored as start_time_) between the device time and ROS time.
   void updateTimestampOffset(const std::chrono::microseconds& k4a_device_timestamp_us,
@@ -73,10 +73,10 @@ class SynexensROSDevice
   void initializeTimestampOffset(const std::chrono::microseconds& k4a_device_timestamp_us);
 
   // ROS Node variables
-  ros::NodeHandle node_;
-  ros::NodeHandle private_node_;
-  ros::NodeHandle node_rgb_;
-  ros::NodeHandle node_ir_;
+  rclcpp::Node node_;
+  rclcpp::Node private_node_;
+  rclcpp::Node node_rgb_;
+  rclcpp::Node node_ir_;
 
   image_transport::ImageTransport image_transport_;
 
