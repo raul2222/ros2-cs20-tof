@@ -1,0 +1,52 @@
+ <launch>
+  <arg name="tf_prefix"               default="" />               <!-- Prefix added to tf frame IDs. It typically contains a trailing '_' unless empty. -->
+  <arg name="depth_enabled"           default="true" />           <!-- Enable or disable the depth camera -->
+  <arg name="depth_resolution"        default="480P" />           <!-- The resolution of the depth frame. Options are: 240P, 480P -->
+  <arg name="ir_enabled"              default="true" />           <!-- Enable or disable the ir camera -->
+  <arg name="color_enabled"           default="true" />           <!-- Enable or disable the color camera -->
+  <arg name="color_resolution"        default="1080P" />           <!-- Resolution at which to run the color camera. Valid options: 720P, 1080P, 1440P, 1536P, 2160P, 3072P -->
+  <arg name="fps"                     default="15" />             <!-- The FPS of the RGB and Depth cameras. Options are: 5, 7, 15, 30 -->
+  <arg name="point_cloud_enabled"     default="true" />           <!-- Generate a point cloud from depth data. Requires depth_enabled -->
+  <arg name="depth_to_rgb_enabled"    default="false" />          <!-- True if mapped depth in color space should be enabled, only valid in depth480P rgb1080P -->
+  <arg name="rgb_to_depth_enabled"    default="false" />          <!-- True if mapped color in depth space should be enabled, only valid in depth480P rgb1080P -->
+  <arg name="rescale_ir_to_mono8"     default="false" />          <!-- Whether to rescale the IR image to an 8-bit monochrome image for visualization and further processing. A scaling factor (ir_mono8_scaling_factor) is applied. -->
+  <arg name="exposure"                default="-1" />             <!-- The Exposure of the Depth cameras. Valid value range: > 0, Use default setting if value=-1 -->
+  <arg name="exposure_range_min"      default="-1" />             <!-- The Min Value of the Depth cameras Exposure Range. Valid value range: > 0, Use default setting if value=-1 -->
+  <arg name="exposure_range_max"      default="-1" />             <!-- The Max Value of the Depth cameras Exposure Range. Valid value range: > 0, Use default setting if value=-1 -->
+  <arg name="distance_range_min"      default="-1" />             <!-- The Min Value of Depth Map Display Distance in mm. Use default setting if value=-1 -->
+  <arg name="distance_range_max"      default="-1" />             <!-- The Max Value of Depth Map Display Distance in mm. Use default setting if value=-1 -->
+  <arg name="rgb_image_flip"          default="-1" />             <!-- 0 to Disable Rgb image Flip, 1 to Enable. Use default setting if value=-1 -->
+  <arg name="rgb_image_mirror"        default="-1" />             <!-- 0 to Disable Rgb image Mirror, 1 to Enable. Use default setting if value=-1 -->
+  <arg name="depth_image_flip"        default="-1" />             <!-- 0 to Disable Depth image Flip, 1 to Enable. Use default setting if value=-1 -->
+  <arg name="depth_image_mirror"      default="-1" />             <!-- 0 to Disable Depth image Mirror, 1 to Enable. Use default setting if value=-1 -->
+  <arg name="depth_image_filter"      default="-1" />             <!-- 0 to Disable Depth image Filter, 1 to Enable. Use default setting if value=-1 -->
+
+  <node pkg="synexens_ros_driver"  type="node" name="synexens_ros_driver" output="screen">
+    <param name="depth_enabled"        type="bool"   value="$(arg depth_enabled)" />
+    <param name="depth_resolution"     type="string" value="$(arg depth_resolution)" />
+    <param name="ir_enabled"           type="bool"   value="$(arg ir_enabled)" />
+    <param name="color_enabled"        type="bool"   value="$(arg color_enabled)" />
+    <param name="color_resolution"     type="string" value="$(arg color_resolution)" />
+    <param name="fps"                  type="int"    value="$(arg fps)" />
+    <param name="point_cloud_enabled"  type="bool"   value="$(arg point_cloud_enabled)" />
+    <param name="depth_to_rgb_enabled" type="bool"   value="$(arg depth_to_rgb_enabled)" />
+    <param name="rgb_to_depth_enabled" type="bool"   value="$(arg rgb_to_depth_enabled)" />
+    <param name="tf_prefix"            type="string" value="$(arg tf_prefix)" />
+    <param name="rescale_ir_to_mono8"  type="bool"   value="$(arg rescale_ir_to_mono8)" />
+    <param name="exposure"             type="int"    value="$(arg exposure)" />
+    <param name="exposure_range_min"   type="int"    value="$(arg exposure_range_min)" />
+    <param name="exposure_range_max"   type="int"    value="$(arg exposure_range_max)" />
+    <param name="distance_range_min"   type="int"    value="$(arg distance_range_min)" />
+    <param name="distance_range_max"   type="int"    value="$(arg distance_range_max)" />
+    <param name="rgb_image_flip"       type="int"    value="$(arg rgb_image_flip)" />
+    <param name="rgb_image_mirror"     type="int"    value="$(arg rgb_image_mirror)" />
+    <param name="depth_image_flip"     type="int"    value="$(arg depth_image_flip)" />
+    <param name="depth_image_mirror"   type="int"    value="$(arg depth_image_mirror)" />
+    <param name="depth_image_filter"   type="int"    value="$(arg depth_image_filter)" />
+  </node>
+
+  <!-- 在rviz中显示-->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find synexens_ros_driver)/rviz/view.rviz" required="true" />
+</launch>
+
+

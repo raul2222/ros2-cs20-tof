@@ -1,0 +1,10 @@
+<!-- 
+ Copyright (c) Synexens Corporation. All rights reserved.
+ -->
+<library path="lib/libsynexens_ros_driver_nodelet">
+  <class name="Synexens_ROS_Driver/SynexensROSBridgeNodelet" type="Synexens_ROS_Driver::SynexensROSBridgeNodelet" base_class_type="nodelet::Nodelet">
+  <description>
+    A nodelet version of the Synexens ROS Driver.
+  </description>
+  </class>
+</library>

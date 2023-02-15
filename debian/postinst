@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+echo ""
+echo "This script copies a udev rule to /etc to facilitate bringing"
+echo ""
+
+sudo cp /opt/ros/noetic/share/synexens_ros_driver/synexens-usb.rules /etc/udev/rules.d
+echo "Copy synexens-usb.rules to /etc/udev/rules.d"
+
+echo ""
+#echo "Restarting udev"
+#echo ""
+sudo service udev reload
+sudo service udev restart
+#sudo udevadm trigger --action=change
+

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!--
+ Copyright (c) Synexens Corporation. All rights reserved.
+ -->
+<package format="2">
+  <name>synexens_ros_driver</name>
+  <version>0.0.4</version>
+  <description>The Synexens3 Sensor Driver for ROS.</description>
+  <maintainer email="xxx@xxx.com">SYN</maintainer>
+  <author email="xxx@xxx.com">SYN</author>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>image_transport</depend>
+  <depend>image_geometry</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>camera_info_manager</depend>
+  <depend>angles</depend>
+  <depend>nodelet</depend>
+  <depend>xacro</depend>
+  <depend>cv_bridge</depend>
+
+  <export>
+    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
+  </export>
+
+</package>
